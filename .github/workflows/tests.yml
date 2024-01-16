@@ -125,8 +125,6 @@ jobs:
 
   bump-changelog:
     name: Bump changelog on release
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    needs: [pypi-publish, upload-zipapp]
     runs-on: ubuntu-latest
     permissions:
       contents: write
