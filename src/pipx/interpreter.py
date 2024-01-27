@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from typing import Optional
 
 from pipx.constants import WINDOWS
@@ -81,7 +82,7 @@ def find_python_interpreter(python_version: str) -> str:
 
 def find_py_launcher_python(python_version: Optional[str] = None) -> Optional[str]:
     py = shutil.which("py")
-    if py and python_version:
+    if py and python_version and not Path(python_version).is_file():
         python_semver = python_version
         if python_version.startswith("python"):
             logging.warn(
