@@ -3,7 +3,6 @@ import os
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 from typing import Optional
 
 from pipx.constants import WINDOWS
@@ -46,19 +45,28 @@ class InterpreterResolutionError(PipxError):
 
 
 def find_python_interpreter(python_version: str) -> str:
-    if Path(python_version).is_file():
-        return python_version
-
     try:
         py_executable = find_py_launcher_python(python_version)
-        if py_executable:
-            return py_executable
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         raise InterpreterResolutionError(source="py launcher", version=python_version) from e
+    if not py_executable:
+        path_python = shutil.which(python_version)
+        if not path_python:
+            raise InterpreterResolutionError(source="PATH", version=python_version)
+        # If path is a symlink, don't apply realpath as that breaks venvs on unix based systems
+        path_python = os.path.realpath(path_python, strict=True) if not os.path.islink(path_python) else path_python
 
-    if shutil.which(python_version):
-        return python_version
-    raise InterpreterResolutionError(source="PATH", version=python_version)
+        try:
+            py_executable = subprocess.run(
+                [path_python, "-c", "import sys; print(sys.executable)"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            raise InterpreterResolutionError(source="PATH", version=python_version) from e
+    # If path is a symlink, don't apply realpath as that breaks venvs on unix based systems
+    return os.path.realpath(py_executable, strict=True) if not os.path.islink(py_executable) else py_executable
 
 
 # The following code was copied from https://github.com/uranusjr/pipx-standalone
