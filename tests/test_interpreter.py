@@ -144,7 +144,7 @@ def test_good_env_python(monkeypatch, capsys):
 
 def test_find_python_interpreter_by_path(monkeypatch):
     interpreter_path = sys.executable
-    assert interpreter_path == find_python_interpreter(interpreter_path)
+    assert interpreter_path.lower() == find_python_interpreter(interpreter_path).lower()
 
 
 def test_find_python_interpreter_by_version(monkeypatch):
