@@ -97,7 +97,8 @@ def find_py_launcher_python(python_version: Optional[str] = None) -> Optional[st
             text=True,
             check=True,
         ).stdout.strip()
-    return py
+        return py
+    return None
 
 
 def _find_default_windows_python() -> str:
